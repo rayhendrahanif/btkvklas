@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BTKVKlas</title>
+<meta name="description" content="Saku klasifikasi bedah toraks, kardiak, dan vaskular: cari cepat, belajar per semester, dan latihan kuis. Bisa dipakai offline.">
+<meta name="theme-color" content="#121014">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="BTKVKlas">
+<style>
+:root {
+  --bg: #121014; --panel: #1a171d; --panel2: #221e26; --line: #2e2933;
+  --text: #f1ecef; --muted: #a59ca6; --accent: #ff7a6b; --accent-ink: #2a0d0a;
+  --accent-soft: rgba(255,122,107,.13); --star: #ffc857; --tag-bg: #f1ecef; --tag-ink: #1a171d;
+  --ok: #4fd18b; --ok-soft: rgba(79,209,139,.13);
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+}
+:root[data-theme="light"] {
+  --bg: #f6f2ef; --panel: #ffffff; --panel2: #f0eae6; --line: #e0d7d1;
+  --text: #1d1719; --muted: #6d6165; --accent: #b3261e; --accent-ink: #ffffff;
+  --accent-soft: rgba(179,38,30,.08); --star: #c98a00; --tag-bg: #1d1719; --tag-ink: #ffffff;
+  --ok: #1a7f4b; --ok-soft: rgba(26,127,75,.10);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 var(--sans); padding-bottom: calc(66px + env(safe-area-inset-bottom)); }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+a { color: var(--accent); }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 780px; margin: 0 auto; padding: 0 14px; }
+h2 { font-size: 22px; letter-spacing: -.02em; margin: 6px 0 4px; }
+h3 { font-size: 15px; margin: 0 0 8px; }
+.lead { color: var(--muted); margin: 0 0 14px; }
+
+header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); padding: calc(10px + env(safe-area-inset-top)) 0 8px; }
+.top { display: flex; align-items: center; gap: 10px; }
+.brand { font-size: 21px; font-weight: 800; letter-spacing: -.02em; margin: 0; }
+.brand a { color: var(--text); text-decoration: none; } .brand span { color: var(--accent); }
+.tagline { color: var(--muted); font-size: 13px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.count { font: 12px var(--mono); color: var(--muted); white-space: nowrap; }
+.iconbtn { width: 34px; height: 34px; border-radius: 8px; display: inline-grid; place-items: center; color: var(--muted); }
+.iconbtn:hover { background: var(--panel2); color: var(--text); }
+.install { background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 999px; }
+
+.search { position: relative; margin-top: 10px; }
+.search input { width: 100%; height: 42px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: 16px var(--sans); padding: 0 44px 0 38px; }
+.search input::placeholder { color: var(--muted); }
+.search svg { position: absolute; left: 12px; top: 13px; color: var(--muted); pointer-events: none; }
+.kbd { position: absolute; right: 10px; top: 10px; font: 12px var(--mono); color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 1px 7px; }
+.clear { position: absolute; right: 6px; top: 6px; width: 30px; height: 30px; border-radius: 7px; color: var(--muted); display: none; }
+.search.has .clear { display: block; } .search.has .kbd { display: none; }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding: 10px 0 2px; scrollbar-width: thin; }
+.chip { flex: none; border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 5px 11px; font-size: 13px; font-weight: 600; white-space: nowrap; text-decoration: none; color: var(--text); }
+.chip i { font: 11px var(--mono); font-style: normal; color: var(--muted); margin-left: 5px; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.chip[aria-pressed="true"] i { color: inherit; opacity: .75; }
+
+main { padding: 14px 0 24px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--line); background: var(--panel); border-radius: 10px; padding: 9px 14px; font-weight: 700; font-size: 14px; text-decoration: none; color: var(--text); }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.sm { padding: 6px 10px; font-size: 13px; border-radius: 8px; }
+.btn.done { color: var(--ok); border-color: var(--ok); background: var(--ok-soft); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-top: 12px; }
+.bar { height: 8px; background: var(--panel2); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .3s; }
+.muted { color: var(--muted); font-size: 13px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.stat { background: var(--panel2); border-radius: 10px; padding: 10px; }
+.stat b { display: block; font-size: 20px; letter-spacing: -.02em; } .stat span { font-size: 12px; color: var(--muted); }
+
+/* Beranda */
+.doors { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.door { display: flex; flex-direction: column; gap: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; text-decoration: none; color: var(--text); transition: border-color .15s, transform .15s; }
+.door:hover { border-color: var(--accent); transform: translateY(-1px); }
+.door .ic { width: 40px; height: 40px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; }
+.door b { font-size: 18px; letter-spacing: -.01em; } .door > span:not(.ic) { color: var(--muted); font-size: 13.5px; }
+.door em { font-style: normal; font-size: 13px; font-weight: 700; color: var(--accent); margin-top: auto; }
+
+/* Belajar */
+.semlist { display: grid; gap: 8px; }
+.semcard { display: grid; grid-template-columns: 52px 1fr; gap: 12px; align-items: start; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; text-decoration: none; color: var(--text); }
+.semcard:hover { border-color: var(--accent); }
+.semcard.empty-sem { opacity: .6; }
+.semno { font: 800 20px var(--mono); color: var(--accent); background: var(--accent-soft); border-radius: 10px; height: 52px; display: grid; place-items: center; }
+.semcard b { display: block; } .semcard .mod { display: block; color: var(--muted); font-size: 13px; }
+.semcard small { color: var(--muted); font-size: 12px; }
+.grp { display: flex; justify-content: space-between; align-items: baseline; margin: 18px 2px 8px; font-size: 14px; }
+.grp i { font: 12px var(--mono); font-style: normal; color: var(--muted); }
+.seg { display: inline-flex; background: var(--panel2); border-radius: 10px; padding: 3px; margin: 4px 0 12px; }
+.seg button { padding: 7px 16px; border-radius: 8px; font-weight: 700; font-size: 14px; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--panel); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,.25); }
+.seg i { font: 11px var(--mono); font-style: normal; margin-left: 4px; opacity: .7; }
+.modtbl td.g, .modtbl td.k { width: 1%; white-space: nowrap; font: 12px var(--mono); color: var(--muted); }
+.topics { list-style: none; padding: 0; margin: 0; }
+.topics > li { padding: 10px 0; border-top: 1px solid var(--line); }
+.topics > li:first-child { border-top: 0; }
+.tp { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; font-weight: 600; }
+.tp input { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--ok); flex: none; }
+.tp.done span { color: var(--muted); text-decoration: line-through; }
+.tlinks { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0 0 30px; }
+.tlinks button { font-size: 12px; font-weight: 600; border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; background: var(--bg); }
+.tlinks button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.peek { margin: 8px 0 0 30px; }
+.reads { margin: 0; padding-left: 18px; } .reads li { margin: 4px 0; }
+.viz.fig svg { display: block; max-width: 460px; margin: 0 auto; }
+.back { display: inline-block; font-size: 13.5px; font-weight: 700; text-decoration: none; margin-bottom: 6px; }
+
+/* Kartu klasifikasi */
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
+.card.open { border-color: var(--accent); }
+.head { display: flex; align-items: center; }
+.toggle { flex: 1; min-width: 0; text-align: left; padding: 11px 4px 11px 14px; }
+.name { font-size: 16px; font-weight: 750; letter-spacing: -.01em; }
+.sub { color: var(--muted); font-size: 13px; margin-left: 6px; }
+.meta { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; align-items: center; }
+.cat { font-size: 11px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 4px; padding: 1px 6px; }
+.lab { font: 11px var(--mono); color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; max-width: 11em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ilab { font-size: 11px; font-weight: 700; color: var(--accent); }
+.vchip { font-size: 11px; color: var(--muted); }
+.lchip { font-size: 11px; font-weight: 700; color: var(--ok); background: var(--ok-soft); border-radius: 4px; padding: 1px 6px; }
+.star.on { color: var(--star); }
+.chev { transition: transform .15s; } .open .chev { transform: rotate(180deg); }
+.body { padding: 0 12px 12px; }
+table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--bg); font-size: 14px; }
+th { text-align: left; font: 700 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 7px 10px; background: var(--panel2); }
+td { padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+td.l { width: 1%; min-width: 68px; max-width: 150px; }
+.tag { display: inline-block; font: 700 12px var(--mono); background: var(--tag-bg); color: var(--tag-ink); border-radius: 5px; padding: 1px 7px; }
+td.c { width: 1%; padding: 4px 4px 0 0; }
+.copy { width: 30px; height: 30px; border-radius: 6px; color: var(--muted); display: grid; place-items: center; }
+.copy:hover { background: var(--panel2); color: var(--text); }
+.note { margin: 10px 0 0; padding: 9px 12px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 8px 8px 0; font-size: 13.5px; }
+.note b { font-weight: 750; }
+.src { margin: 8px 2px 0; font-size: 12.5px; color: var(--muted); }
+.src.ok { color: var(--text); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.empty { text-align: center; color: var(--muted); padding: 40px 10px; }
+
+/* Bagan & kalkulator */
+.viz { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 10px; margin-bottom: 10px; font-size: 13px; }
+.viz small { display: block; color: var(--muted); margin-top: 6px; }
+.viz input, .viz select, .field select { font: 15px var(--sans); color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; max-width: 100%; }
+.viz input { width: 90px; }
+.ex-row, .ex-head { display: grid; grid-template-columns: 76px 1fr; gap: 8px; align-items: center; margin-top: 5px; }
+.ex-head div { display: flex; } .ex-head em { flex: 1; font-style: normal; font-size: 10.5px; color: var(--muted); text-align: center; line-height: 1.15; padding: 0 2px; }
+.ex-track { position: relative; height: 18px; border-radius: 5px; background-color: var(--panel2); background-image: linear-gradient(to right, var(--line) 1px, transparent 1px); }
+.ex-bar { position: absolute; top: 3px; bottom: 3px; border-radius: 4px; background: var(--accent); }
+.ex-bar.maybe { background: repeating-linear-gradient(135deg, var(--accent) 0 3px, transparent 3px 7px); opacity: .75; }
+.sc { display: flex; gap: 3px; margin-top: 8px; } .sc-seg { flex: 1; min-width: 0; border-radius: 6px; background: var(--panel2); padding: 6px 4px; text-align: center; border: 2px solid transparent; }
+.sc-seg b { display: block; font-size: 12px; } .sc-seg span { font: 11px var(--mono); color: var(--muted); }
+.sc-seg.on, .qd-cell.on { border-color: var(--accent); background: var(--accent-soft); }
+.qd { display: grid; grid-template-columns: auto 1fr 1fr; gap: 4px; margin-top: 8px; align-items: stretch; }
+.qd-ax { font: 11px var(--mono); color: var(--muted); display: grid; place-items: center; padding: 2px 4px; text-align: center; }
+.qd-cell { border-radius: 6px; background: var(--panel2); padding: 10px 6px; text-align: center; border: 2px solid transparent; }
+.calc-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 4px 0; border-bottom: 1px dashed var(--line); }
+.viz-out { margin: 8px 0 0; font-weight: 700; min-height: 1.4em; } .viz-in { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+
+/* Latihan */
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+.field select { font-size: 16px; padding: 8px 10px; border-radius: 8px; }
+.qhead { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+.qhead span:first-child { flex: 1; min-width: 0; } .qhead b { color: var(--text); font-family: var(--mono); }
+.qcard { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-top: 10px; }
+.qmeta { font-size: 12px; font-weight: 700; color: var(--accent); }
+.qprompt { font-size: 17px; line-height: 1.45; margin: 6px 0 4px; }
+.quote { display: block; margin-top: 10px; padding: 10px 12px; background: var(--panel2); border-radius: 8px; font-size: 15px; }
+.opt { display: flex; gap: 10px; align-items: flex-start; width: 100%; text-align: left; border: 1.5px solid var(--line); background: var(--bg); border-radius: 10px; padding: 11px 12px; margin-top: 8px; }
+.opt:hover:not([disabled]) { border-color: var(--muted); }
+.opt kbd { font: 700 11px var(--mono); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; color: var(--muted); flex: none; margin-top: 2px; }
+.opt[disabled] { cursor: default; }
+.opt.ok { border-color: var(--ok); background: var(--ok-soft); }
+.opt.bad { border-color: var(--accent); background: var(--accent-soft); }
+.fb { margin-top: 12px; padding: 11px 12px; border-radius: 10px; font-size: 14px; }
+.fb.ok { background: var(--ok-soft); } .fb.bad { background: var(--accent-soft); }
+.fb b { display: block; margin-bottom: 2px; }
+.score { font-size: 44px; font-weight: 800; letter-spacing: -.03em; }
+.wlist { list-style: none; padding: 0; margin: 8px 0 0; }
+.wlist li { padding: 8px 0; border-top: 1px solid var(--line); font-size: 13.5px; }
+
+/* Navigasi bawah */
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--panel); border-top: 1px solid var(--line); display: flex; justify-content: center; padding-bottom: env(safe-area-inset-bottom); }
+.tabs a { flex: 1; max-width: 150px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0 7px; font-size: 11.5px; font-weight: 650; color: var(--muted); text-decoration: none; }
+.tabs a[aria-current="page"] { color: var(--accent); }
+
+footer.disc { color: var(--muted); font-size: 12.5px; margin-top: 18px; }
+footer.disc p { margin: 0 0 8px; }
+.toast { position: fixed; left: 50%; bottom: calc(80px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--text); color: var(--bg); font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 7; }
+.toast.show { opacity: 1; }
+@media (max-width: 620px) { .doors { grid-template-columns: 1fr; } .door { flex-direction: row; flex-wrap: wrap; align-items: center; column-gap: 12px; } .door > span:not(.ic) { flex-basis: 100%; } .door em { display: none; } }
+@media (max-width: 520px) { .ex-head em { font-size: 9px; overflow-wrap: anywhere; } .ex-row, .ex-head { grid-template-columns: 62px 1fr; } .tagline { display: none; } .brand { flex: 1; } .sub { display: block; margin: 0; } .stats { grid-template-columns: 1fr 1fr 1fr; } .stat b { font-size: 17px; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<header id="hdr">
+  <div class="wrap">
+    <div class="top">
+      <h1 class="brand"><a href="#/">BTKV<span>Klas</span></a></h1>
+      <div class="tagline">Saku klasifikasi bedah toraks, kardiak &amp; vaskular</div>
+      <div class="count" id="count"></div>
+      <button class="iconbtn" id="theme" aria-label="Ganti tema terang/gelap" title="Ganti tema">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+      <button class="install" id="install" hidden>Pasang</button>
+    </div>
+    <div id="toolbar"></div>
+  </div>
+</header>
+
+<main class="wrap" id="view"></main>
+
+<nav class="tabs" id="tabs" aria-label="Navigasi utama">
+  <a href="#/" data-tab="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Beranda</a>
+  <a href="#/cari" data-tab="cari"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Cari</a>
+  <a href="#/belajar" data-tab="belajar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h7"/></svg>Belajar</a>
+  <a href="#/latihan" data-tab="latihan"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01"/></svg>Latihan</a>
+</nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var store = {
+    get: function (k, d) { try { var v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  };
+  var norm = function (s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[₀-₉]/g, function (c) { return "₀₁₂₃₄₅₆₇₈₉".indexOf(c); }); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+  var rnd = function (n) { return Math.floor(Math.random() * n); };
+  var shuffle = function (a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = rnd(i + 1), t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+
+  var catName = {}, byId = {};
+  CATS.forEach(function (c) { catName[c.id] = c.name; });
+  DATA.forEach(function (d) {
+    byId[d.id] = d;
+    d.hay = norm([d.n, d.s, catName[d.c], d.k, d.note, d.r.map(function (r) { return r.join(" "); }).join(" ")].join(" "));
+    d.head = norm(d.n + " " + d.s + " " + d.k);
+  });
+  var semById = {}; SEMS.forEach(function (s) { semById[s.id] = s; });
+  var semItems = function (sid) {
+    var out = [];
+    CATS.forEach(function (c) { DATA.forEach(function (d) { if (d.c === c.id && d.sems.indexOf(sid) >= 0) out.push(d); }); });
+    return out;
+  };
+
+  var favs = store.get("btkvklas.favs", []);
+  var learned = store.get("btkvklas.learned", []);
+  var qs = store.get("btkvklas.quiz", { n: 0, ok: 0, wrong: {} });
+  var state = { view: "home", cat: "all", q: "", open: {}, sem: store.get("btkvklas.sem", null), semView: null, qscope: "all", qn: 10 };
+  var quiz = null;
+  var topics = store.get("btkvklas.topics", {});
+  state.semTab = store.get("btkvklas.semtab", "klas"); state.peek = null;
+  var topicDone = function (sid) { var m = MATERI[sid]; return m ? m.pokok.filter(function (p, i) { return topics[sid + ":" + i]; }).length : 0; };
+  var isLearned = function (id) { return learned.indexOf(id) >= 0; };
+
+  var theme = store.get("btkvklas.theme", null);
+  if (theme) document.documentElement.setAttribute("data-theme", theme);
+  $("theme").onclick = function () {
+    var cur = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", cur);
+    store.set("btkvklas.theme", cur);
+  };
+
+  var ICON = {
+    star: '<svg width="19" height="19" viewBox="0 0 24 24" fill="FILL" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>',
+    chev: '<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+    copy: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>',
+    search: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+    book: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h7"/></svg>',
+    quiz: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01"/></svg>'
+  };
+  var DISC = '<footer class="disc"><p><b>Ringkasan untuk rujukan cepat dan belajar, bukan pengganti sumber primer atau penilaian klinis.</b> Klasifikasi, ambang, dan rekomendasi dapat berbeda antar pedoman dan edisi; entri bertanda “sumber ✓” sudah dicek silang ke sumber daring, entri lain belum.</p></footer>';
+
+  /* ───────── Kartu klasifikasi ───────── */
+  function vizHTML(d) {
+    var v = d.viz; if (!v) return "";
+    var h = '<div class="viz' + (v.t === "fig" ? " fig" : "") + '">';
+    if (v.t === "extent") {
+      var n = v.segs.length, bar = function (r, c) { return '<i class="ex-bar ' + c + '" style="left:' + (r[0] / n * 100) + "%;width:" + ((r[1] - r[0]) / n * 100) + '%"></i>'; };
+      h += '<div class="ex-head"><span></span><div>' + v.segs.map(function (s) { return "<em>" + esc(s) + "</em>"; }).join("") + "</div></div>" +
+        v.rows.map(function (r) { return '<div class="ex-row"><span><span class="tag">' + esc(r[0]) + '</span></span><div class="ex-track" style="background-size:' + (100 / n) + '% 100%">' + bar(r[1], "") + (r[2] ? bar(r[2], "maybe") : "") + "</div></div>"; }).join("") +
+        "<small>Bagan skematis. Batang penuh: segmen yang terkena menurut definisi. Batang bergaris: dapat meluas.</small>";
+    } else if (v.t === "scale") {
+      h += '<div class="viz-in"><label>Masukkan nilai (' + esc(v.unit) + '): <input type="text" inputmode="decimal" data-in="scale" aria-label="Nilai ' + esc(v.unit) + '"></label></div><div class="sc">' +
+        v.segs.map(function (s) { return '<div class="sc-seg"><b>' + esc(s[0]) + "</b><span>" + esc(s[1]) + "</span></div>"; }).join("") + '</div><p class="viz-out" aria-live="polite"></p>';
+    } else if (v.t === "quad") {
+      h += '<div class="viz-in"><label>CI (L/menit/m²): <input type="text" inputmode="decimal" data-in="quad" data-ax="y"></label><label>PCWP (mmHg): <input type="text" inputmode="decimal" data-in="quad" data-ax="x"></label></div>' +
+        '<div class="qd"><span></span><span class="qd-ax">' + esc(v.x[0]) + '</span><span class="qd-ax">' + esc(v.x[1]) + "</span>" +
+        [0, 1].map(function (r) { return '<span class="qd-ax">' + esc(v.y[r]) + "</span>" + [0, 1].map(function (c) { var k = v.cells[r * 2 + c]; return '<div class="qd-cell"><span class="tag">' + esc(k[0]) + "</span><br>" + esc(k[1]) + "</div>"; }).join(""); }).join("") +
+        '</div><p class="viz-out" aria-live="polite"></p>';
+    } else if (v.t === "fig") {
+      h += v.svg + "<small>" + esc(v.cap) + "</small>";
+    } else if (v.t === "calc") {
+      h += v.items.map(function (it) { return '<label class="calc-item"><span>' + esc(it[0]) + '</span><select data-in="calc">' + it[1].map(function (o) { return '<option value="' + o[1] + '">' + esc(o[0]) + " (" + o[1] + ")</option>"; }).join("") + "</select></label>"; }).join("") +
+        '<p class="viz-out" aria-live="polite"></p>';
+    }
+    return h + "</div>";
+  }
+  function num(el) { return parseFloat(String(el.value).replace(",", ".")); }
+  function vizUpdate(e) {
+    var el = e.target, kind = el.getAttribute && el.getAttribute("data-in"); if (!kind) return;
+    var card = el.closest(".card"); if (!card) return;
+    var v = byId[card.id].viz, out = card.querySelector(".viz-out"), idx = -1, i;
+    if (kind === "scale") {
+      var x = num(el);
+      if (!isNaN(x)) for (i = 0; i < v.segs.length; i++) if (v.segs[i][2] === null || x <= v.segs[i][2]) { idx = i; break; }
+      [].forEach.call(card.querySelectorAll(".sc-seg"), function (s, j) { s.classList.toggle("on", j === idx); });
+      out.textContent = idx < 0 ? "" : v.segs[idx][0] + " (" + v.segs[idx][1] + ")";
+    } else if (kind === "quad") {
+      var ci = num(card.querySelector('[data-ax="y"]')), pw = num(card.querySelector('[data-ax="x"]'));
+      if (!isNaN(ci) && !isNaN(pw)) idx = (ci > 2.2 ? 0 : 2) + (pw > 18 ? 1 : 0);
+      [].forEach.call(card.querySelectorAll(".qd-cell"), function (s, j) { s.classList.toggle("on", j === idx); });
+      out.textContent = idx < 0 ? "" : "Forrester " + v.cells[idx][0] + ": " + v.cells[idx][1];
+    } else if (kind === "calc") {
+      var t = 0, band = "";
+      [].forEach.call(card.querySelectorAll('[data-in="calc"]'), function (s) { t += +s.value; });
+      for (i = 0; i < v.bands.length; i++) if (t <= v.bands[i][0]) { band = " — " + v.bands[i][1]; break; }
+      out.textContent = "Total " + t + " dari " + v.max + band;
+    }
+  }
+
+  function nextInSem(id) {
+    if (state.view !== "belajar" || !state.semView) return null;
+    var seq = semItems(state.semView), i = seq.indexOf(byId[id]);
+    return i >= 0 && i < seq.length - 1 ? seq[i + 1] : null;
+  }
+
+  function cardHTML(d) {
+    var open = !!state.open[d.id], fav = favs.indexOf(d.id) >= 0, done = isLearned(d.id);
+    var labs = d.r.slice(0, 6).map(function (r) { return '<span class="lab">' + esc(r[0]) + "</span>"; }).join("");
+    var h = '<article class="card' + (open ? " open" : "") + '" id="' + d.id + '"><div class="head">' +
+      '<button class="toggle" data-act="toggle" aria-expanded="' + open + '">' +
+      '<span class="name">' + esc(d.n) + '</span><span class="sub">' + esc(d.s) + "</span>" +
+      '<div class="meta"><span class="cat">' + esc(catName[d.c]) + "</span>" +
+      (done ? '<span class="lchip">dipelajari</span>' : "") +
+      (d.viz ? '<span class="ilab">' + (d.viz.t === "calc" ? "Kalkulator" : "Bagan") + "</span>" : "") +
+      (d.src ? '<span class="vchip" title="Sudah dicek silang ke sumber daring">sumber ✓</span>' : "") + labs + "</div></button>" +
+      '<button class="iconbtn star' + (fav ? " on" : "") + '" data-act="fav" aria-pressed="' + fav + '" aria-label="Favorit: ' + esc(d.n) + '">' + ICON.star.replace("FILL", fav ? "currentColor" : "none") + "</button>" +
+      '<button class="iconbtn" data-act="toggle" tabindex="-1" aria-hidden="true">' + ICON.chev + "</button></div>";
+    if (open) {
+      var nx = nextInSem(d.id);
+      h += '<div class="body">' + vizHTML(d) + '<table><thead><tr><th>' + esc(d.h[0]) + "</th><th>" + esc(d.h[1]) + "</th><th></th></tr></thead><tbody>" +
+        d.r.map(function (r, i) {
+          return '<tr><td class="l"><span class="tag">' + esc(r[0]) + "</span></td><td>" + esc(r[1]) +
+            '</td><td class="c"><button class="copy" data-act="copy" data-i="' + i + '" aria-label="Salin baris">' + ICON.copy + "</button></td></tr>";
+        }).join("") + "</tbody></table>" +
+        (d.note ? '<p class="note"><b>Catatan klinis.</b> ' + esc(d.note) + "</p>" : "") +
+        (d.src ? '<p class="src ok">Sumber ✓ (' + esc(d.src[2]) + '): <a href="' + esc(d.src[1]) + '" target="_blank" rel="noopener">' + esc(d.src[0]) + "</a></p>"
+               : '<p class="src">Belum dicek silang ke sumber primer.</p>') +
+        '<div class="actions"><button class="btn sm' + (done ? " done" : "") + '" data-act="learn">' + (done ? "✓ Sudah dipelajari" : "Tandai sudah dipelajari") + "</button>" +
+        '<button class="btn sm" data-act="quiz-one">Uji diri: 3 soal</button>' +
+        (nx ? '<button class="btn sm primary" data-act="next">Berikutnya: ' + esc(nx.n) + " →</button>" : "") + "</div></div>";
+    }
+    return h + "</article>";
+  }
+
+  /* ───────── Beranda ───────── */
+  function renderHome() {
+    var nl = learned.filter(function (id) { return byId[id]; }).length;
+    var acc = qs.n ? Math.round(qs.ok / qs.n * 100) + "%" : "–";
+    var wrongN = Object.keys(qs.wrong).filter(function (id) { return byId[id]; }).length;
+    var cur = state.sem && semById[state.sem];
+    var vizList = DATA.filter(function (d) { return d.viz; });
+    var favList = favs.map(function (id) { return byId[id]; }).filter(Boolean);
+    $("view").innerHTML =
+      '<h2>Mau apa hari ini?</h2><p class="lead">' + DATA.length + " klasifikasi bedah toraks, kardiak, dan vaskular. Pilih salah satu pintu:</p>" +
+      '<div class="doors">' +
+      '<a class="door" href="#/cari"><span class="ic">' + ICON.search + '</span><b>Cari</b><span>Temukan klasifikasi dalam hitungan detik saat jaga, visite, atau di kamar operasi.</span><em>Buka pencarian →</em></a>' +
+      '<a class="door" href="#/belajar' + (cur ? "/" + cur.id : "") + '"><span class="ic">' + ICON.book + '</span><b>Belajar</b><span>' + (cur ? "Lanjutkan semester " + cur.r + " · " + esc(cur.tahap) + "." : "Ikuti urutan semester kurikulum PPDS BTKV dan tandai yang sudah dipelajari.") + "</span><em>" + (cur ? "Lanjutkan →" : "Pilih semester →") + "</em></a>" +
+      '<a class="door" href="#/latihan"><span class="ic">' + ICON.quiz + '</span><b>Latihan</b><span>Kuis pilihan ganda dari seluruh klasifikasi; lihat mana yang masih sering salah.</span><em>' + (quiz && !quiz.done ? "Lanjutkan kuis →" : "Mulai kuis →") + "</em></a>" +
+      "</div>" +
+      '<section class="panel"><h3>Progres Anda</h3><div class="bar"><i style="width:' + (nl / DATA.length * 100) + '%"></i></div>' +
+      '<div class="stats"><div class="stat"><b>' + nl + "/" + DATA.length + "</b><span>dipelajari</span></div>" +
+      '<div class="stat"><b>' + qs.n + "</b><span>soal dijawab</span></div>" +
+      '<div class="stat"><b>' + acc + "</b><span>jawaban benar</span></div></div>" +
+      (wrongN ? '<p class="row" style="margin:12px 0 0"><span class="muted">' + wrongN + " klasifikasi masih sering salah.</span> <button class=\"btn sm\" data-act=\"quiz-wrong\">Latih yang salah</button></p>" : "") +
+      "</section>" +
+      '<section class="panel"><h3>Coba yang interaktif</h3><p class="muted" style="margin:0 0 4px">Isi nilai, lihat kategorinya menyala; atau hitung skor langsung.</p><div class="chips">' +
+      vizList.map(function (d) { return '<a class="chip" href="#' + d.id + '">' + esc(d.n) + "<i>" + (d.viz.t === "calc" ? "kalkulator" : "bagan") + "</i></a>"; }).join("") + "</div></section>" +
+      (favList.length ? '<section class="panel"><h3>★ Favorit</h3><div class="chips">' + favList.map(function (d) { return '<a class="chip" href="#' + d.id + '">' + esc(d.n) + "</a>"; }).join("") + "</div></section>" : "") +
+      DISC + '<footer class="disc"><p>Pasang di iPhone/iPad: buka di Safari → Bagikan → “Tambahkan ke Layar Utama”. Di Android/Chrome: tombol Pasang atau menu ⋮ → “Instal aplikasi”. Setelah terpasang, aplikasi bisa dibuka tanpa sinyal.</p></footer>';
+  }
+
+  /* ───────── Cari ───────── */
+  function matches(d, tokens) { for (var i = 0; i < tokens.length; i++) if (d.hay.indexOf(tokens[i]) < 0) return false; return true; }
+  function score(d, tokens) { var s = 0; tokens.forEach(function (t) { if (norm(d.n).indexOf(t) === 0) s += 4; else if (d.head.indexOf(t) >= 0) s += 2; }); return s; }
+  function renderCariShell() {
+    $("toolbar").innerHTML =
+      '<div class="search" id="searchbox"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>' +
+      '<input id="q" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Cari: diseksi, mitral, Stanford, TNM, iskemia…" aria-label="Cari klasifikasi">' +
+      '<span class="kbd" aria-hidden="true">/</span><button class="clear" id="clear" aria-label="Hapus pencarian">✕</button></div>' +
+      '<div class="chips" id="chips" role="toolbar" aria-label="Filter kategori"></div>';
+    $("q").value = state.q;
+  }
+  function updateCari() {
+    var tokens = norm(state.q).split(/\s+/).filter(Boolean);
+    var pool = DATA.filter(function (d) { return matches(d, tokens); });
+    var list = [{ id: "all", name: "Semua", n: pool.length }, { id: "fav", name: "★ Favorit", n: pool.filter(function (d) { return favs.indexOf(d.id) >= 0; }).length }]
+      .concat(CATS.map(function (c) { return { id: c.id, name: c.name, n: pool.filter(function (d) { return d.c === c.id; }).length }; }));
+    $("chips").innerHTML = list.map(function (c) { return '<button class="chip" data-cat="' + c.id + '" aria-pressed="' + (state.cat === c.id) + '">' + esc(c.name) + "<i>" + c.n + "</i></button>"; }).join("");
+    $("searchbox").classList.toggle("has", !!state.q);
+    var items = pool.filter(function (d) { return state.cat === "all" || (state.cat === "fav" ? favs.indexOf(d.id) >= 0 : d.c === state.cat); });
+    if (tokens.length) items = items.map(function (d, i) { return [score(d, tokens), i, d]; }).sort(function (a, b) { return b[0] - a[0] || a[1] - b[1]; }).map(function (x) { return x[2]; });
+    $("view").innerHTML = (items.length ? items.map(cardHTML).join("") :
+      '<div class="empty">' + (state.cat === "fav" && !state.q ? "Belum ada favorit. Ketuk ★ pada klasifikasi yang sering dipakai." : "Tidak ada klasifikasi yang cocok. Coba kata kunci lain atau pilih “Semua”.") + "</div>") + DISC;
+  }
+
+  /* ───────── Belajar ───────── */
+  function renderBelajar() {
+    var v = $("view");
+    if (!state.semView) {
+      v.innerHTML = '<h2>Belajar per semester</h2><p class="lead">Tahap dan modul menurut Buku Kurikulum PPDS-1 BTKV FKUI 2022. Pengelompokan klasifikasi ke semester adalah bantuan belajar, bukan isi buku.</p><div class="semlist">' +
+        SEMS.map(function (s) {
+          var items = semItems(s.id), done = items.filter(function (d) { return isLearned(d.id); }).length;
+          return '<a class="semcard' + (items.length ? "" : " empty-sem") + '" href="#/belajar/' + s.id + '"><span class="semno">' + s.r + "</span><span><b>" + esc(s.tahap) + '</b><span class="mod">' + esc(s.modul) + "</span>" +
+            (items.length ? '<span class="bar"><i style="width:' + (done / items.length * 100) + '%"></i></span><small>' + done + "/" + items.length + " klasifikasi dipelajari · " : "<small>") +
+            topicDone(s.id) + "/" + MATERI[s.id].pokok.length + " pokok bahasan · " + MATERI[s.id].mod.reduce(function (a, m) { return a + m[2]; }, 0) + " SKS</small></span></a>";
+        }).join("") + "</div>";
+      return;
+    }
+    var s = semById[state.semView], items = semItems(s.id), done = items.filter(function (d) { return isLearned(d.id); }).length, M = MATERI[s.id];
+    var h = '<a class="back" href="#/belajar">← Semua semester</a><h2>Semester ' + s.r + "</h2>" +
+      '<p class="lead"><b>' + esc(s.tahap) + "</b></p>" +
+      '<div class="seg" role="group" aria-label="Tampilan semester"><button data-act="semtab" data-tab="klas" aria-pressed="' + (state.semTab === "klas") + '">Klasifikasi<i>' + items.length + '</i></button><button data-act="semtab" data-tab="materi" aria-pressed="' + (state.semTab === "materi") + '">Materi<i>' + topicDone(s.id) + "/" + M.pokok.length + "</i></button></div>";
+    if (state.semTab === "materi") {
+      var td = topicDone(s.id), sks = M.mod.reduce(function (a, m) { return a + m[2]; }, 0);
+      h += '<section class="panel" style="margin-top:0"><h3>Pokok bahasan</h3><div class="row" style="justify-content:space-between"><span class="muted">Centang yang sudah dikuasai. Ketuk nama klasifikasi untuk membukanya di sini.</span><b>' + td + "/" + M.pokok.length + '</b></div><div class="bar"><i style="width:' + (td / M.pokok.length * 100) + '%"></i></div><ul class="topics">' +
+        M.pokok.map(function (p, i) {
+          var key = s.id + ":" + i, on = !!topics[key];
+          return '<li><label class="tp' + (on ? " done" : "") + '"><input type="checkbox" data-act="topic" data-key="' + key + '"' + (on ? " checked" : "") + "><span>" + esc(p[0]) + "</span></label>" +
+            (p[1].length ? '<div class="tlinks">' + p[1].map(function (id) { return '<button data-act="peek" data-id="' + id + '" data-key="' + key + '" aria-pressed="' + (state.peek === key + "|" + id) + '">' + esc(byId[id].n) + "</button>"; }).join("") + "</div>" : "") +
+            (state.peek && state.peek.indexOf(key + "|") === 0 ? '<div class="peek">' + cardHTML(byId[state.peek.split("|")[1]]) + "</div>" : "") + "</li>";
+        }).join("") + '</ul><p class="muted" style="margin:10px 0 0">Pokok bahasan disusun sebagai panduan belajar; buku kurikulum hanya memuat nama modul.</p></section>' +
+        '<section class="panel"><h3>Modul kurikulum · ' + sks + ' SKS</h3><table class="modtbl"><thead><tr><th>Modul</th><th>Kelompok</th><th>SKS</th></tr></thead><tbody>' +
+        M.mod.map(function (m) { return "<tr><td>" + esc(m[0]) + '</td><td class="g">' + esc(m[1]) + '</td><td class="k">' + m[2] + "</td></tr>"; }).join("") +
+        '</tbody></table><p class="muted" style="margin:8px 0 0">Sumber: Buku Kurikulum PPDS-1 BTKV FKUI 2022, bab 5 dan Tabel 6. MDU/MDK = materi dasar umum/khusus; MKU = materi keahlian umum; MKK = materi keahlian khusus; MPA = materi penerapan akademik; MPK = materi penerapan keprofesian.</p></section>' +
+        (M.baca.length ? '<section class="panel"><h3>Bacaan</h3><ul class="reads">' + M.baca.map(function (b) { return "<li>" + esc(b[0]) + ' <span class="muted">· hlm. ' + esc(b[1]) + "</span></li>"; }).join("") + '</ul><p class="muted" style="margin:8px 0 0">' + esc(BUKU) + ", nomor halaman menurut daftar isinya.</p></section>" : "");
+      v.innerHTML = h + DISC; return;
+    }
+    if (!items.length) { v.innerHTML = h + '<div class="empty">Semester ini berisi ilmu dasar atau rotasi bedah lain; tidak ada klasifikasi BTKV yang dipetakan ke sini.</div>'; return; }
+    h += '<div class="panel" style="margin-top:0"><div class="row" style="justify-content:space-between"><b>' + done + "/" + items.length + ' dipelajari</b><span class="muted">' + Math.round(done / items.length * 100) + "%</span></div>" +
+      '<div class="bar"><i style="width:' + (done / items.length * 100) + '%"></i></div>' +
+      '<div class="row" style="margin-top:10px"><button class="btn primary sm" data-act="first-unlearned">' + (done < items.length ? "Mulai dari yang belum dipelajari" : "Ulangi dari awal") + '</button><button class="btn sm" data-act="quiz-sem">Kuis semester ini</button></div></div>' +
+      (["4", "7", "9"].indexOf(s.id) >= 0 ? '<p class="muted">Buku kurikulum tidak merinci isi modul jantung dewasa pratama, madya, dan paripurna, jadi klasifikasi jantung dewasa tampil di semester IV, VII, dan IX.</p>' : "");
+    CATS.forEach(function (c) {
+      var g = items.filter(function (d) { return d.c === c.id; }); if (!g.length) return;
+      var gd = g.filter(function (d) { return isLearned(d.id); }).length;
+      h += '<h3 class="grp">' + esc(c.name) + "<i>" + gd + "/" + g.length + "</i></h3>" + g.map(cardHTML).join("");
+    });
+    v.innerHTML = h + DISC;
+  }
+
+  /* ───────── Latihan ───────── */
+  function uniqRows(d) {
+    var lc = {}, dc = {};
+    d.r.forEach(function (r) { lc[norm(r[0])] = (lc[norm(r[0])] || 0) + 1; dc[norm(r[1])] = (dc[norm(r[1])] || 0) + 1; });
+    return d.r.filter(function (r) { return lc[norm(r[0])] === 1 && dc[norm(r[1])] === 1; });
+  }
+  var firstTok = function (s) { return norm(s).split(/[\s(—\-–]/)[0]; };
+  function typesFor(d) {
+    var t = [];
+    if (uniqRows(d).length >= 3) t.push("lab", "desc");
+    var ft = firstTok(d.n);
+    if (!(ft.length > 3 && norm(d.s).indexOf(ft) >= 0)) t.push("name");
+    if (!t.length) t.push("name");
+    return t;
+  }
+  function makeQ(d, type) {
+    var rows = uniqRows(d), r, others;
+    if (type === "lab" || type === "desc") {
+      r = rows[rnd(rows.length)];
+      others = shuffle(rows.filter(function (x) { return x !== r; })).slice(0, 3);
+      if (type === "lab") return { id: d.id, key: d.id + "|lab|" + r[0], meta: catName[d.c] + " · " + d.n,
+        prompt: "Pada <b>" + esc(d.n) + "</b>, deskripsi berikut termasuk yang mana?" + '<span class="quote">' + esc(r[1]) + "</span>",
+        opts: shuffle([r[0]].concat(others.map(function (x) { return x[0]; }))), ans: r[0], expl: r[0] + ": " + r[1], mono: true };
+      return { id: d.id, key: d.id + "|desc|" + r[0], meta: catName[d.c] + " · " + d.n,
+        prompt: "Pada <b>" + esc(d.n) + '</b>, apa yang dimaksud dengan <span class="tag">' + esc(r[0]) + "</span>?",
+        opts: shuffle([r[1]].concat(others.map(function (x) { return x[1]; }))), ans: r[1], expl: r[0] + ": " + r[1] };
+    }
+    var ft = firstTok(d.n), okd = function (x) { return x !== d && firstTok(x.n) !== ft; };
+    var pool = DATA.filter(function (x) { return okd(x) && x.c === d.c; });
+    if (pool.length < 3) pool = DATA.filter(okd);
+    var labs = d.r.slice(0, 5).map(function (x) { return x[0]; }).join(" · ") + (d.r.length > 5 ? " · …" : "");
+    return { id: d.id, key: d.id + "|name", meta: catName[d.c],
+      prompt: "Klasifikasi atau skor apa yang dimaksud?" + '<span class="quote">' + esc(d.s) + '<br><span class="muted">Pembagian: ' + esc(labs) + "</span></span>",
+      opts: shuffle([d.n].concat(shuffle(pool).slice(0, 3).map(function (x) { return x.n; }))), ans: d.n, expl: d.n + " — " + d.s };
+  }
+  function scopePool(scope) {
+    var p = scope.split(":");
+    if (p[0] === "cat") return DATA.filter(function (d) { return d.c === p[1]; });
+    if (p[0] === "sem") return semItems(p[1]);
+    if (p[0] === "fav") return favs.map(function (id) { return byId[id]; }).filter(Boolean);
+    if (p[0] === "wrong") return Object.keys(qs.wrong).map(function (id) { return byId[id]; }).filter(Boolean);
+    if (p[0] === "one") return [byId[p[1]]].filter(Boolean);
+    return DATA.slice();
+  }
+  function scopeLabel(scope) {
+    var p = scope.split(":");
+    if (p[0] === "cat") return catName[p[1]];
+    if (p[0] === "sem") return "Semester " + semById[p[1]].r;
+    if (p[0] === "fav") return "Favorit";
+    if (p[0] === "wrong") return "Yang sering salah";
+    if (p[0] === "one") return byId[p[1]].n;
+    return "Semua klasifikasi";
+  }
+  function buildQuiz(scope, N) {
+    var pool = scopePool(scope); if (!pool.length) return null;
+    var order = [], out = [], guard = 0;
+    while (out.length < N && guard < N * 12) {
+      if (!order.length) order = shuffle(pool);
+      var d = order.pop(), ts = typesFor(d); guard++;
+      var q = makeQ(d, ts[rnd(ts.length)]);
+      if (q.opts.length >= 2 && !out.some(function (x) { return x.key === q.key; })) out.push(q);
+    }
+    return out.length ? { scope: scope, qs: out, i: 0, score: 0, picked: null, done: false, wrong: [] } : null;
+  }
+  function startQuiz(scope, N) {
+    var qz = buildQuiz(scope, N);
+    if (!qz) { toast("Belum ada soal untuk cakupan ini"); return; }
+    quiz = qz;
+    if (location.hash === "#/latihan") render(); else location.hash = "#/latihan";
+  }
+  function renderLatihan() {
+    var v = $("view");
+    if (quiz && !quiz.done) {
+      var q = quiz.qs[quiz.i], answered = quiz.picked !== null;
+      v.innerHTML = '<div class="qhead"><span>' + esc(scopeLabel(quiz.scope)) + " · soal <b>" + (quiz.i + 1) + "/" + quiz.qs.length + "</b></span><span>skor <b>" + quiz.score + '</b></span><button class="btn sm" data-act="quiz-quit">Akhiri</button></div>' +
+        '<div class="bar"><i style="width:' + (quiz.i / quiz.qs.length * 100) + '%"></i></div>' +
+        '<div class="qcard"><div class="qmeta">' + esc(q.meta) + '</div><div class="qprompt">' + q.prompt + "</div>" +
+        q.opts.map(function (o, k) {
+          var cls = !answered ? "" : o === q.ans ? " ok" : k === quiz.picked ? " bad" : "";
+          return '<button class="opt' + cls + '" data-act="quiz-ans" data-k="' + k + '"' + (answered ? " disabled" : "") + "><kbd>" + (k + 1) + "</kbd><span" + (q.mono ? ' class="tag"' : "") + ">" + esc(o) + "</span></button>";
+        }).join("") +
+        (answered ? '<div class="fb ' + (q.opts[quiz.picked] === q.ans ? 'ok"><b>Benar!</b>' : 'bad"><b>Belum tepat.</b>') + esc(q.expl) +
+          ' <a href="#' + q.id + '">Buka klasifikasinya</a></div><div class="row" style="margin-top:12px"><button class="btn primary" data-act="quiz-next">' +
+          (quiz.i < quiz.qs.length - 1 ? "Soal berikutnya →" : "Lihat hasil →") + '</button><span class="muted">atau tekan Enter</span></div>' : '<p class="muted" style="margin:10px 0 0">Ketuk jawaban, atau tekan 1–' + q.opts.length + " di keyboard.</p>") +
+        "</div>";
+      return;
+    }
+    if (quiz && quiz.done) {
+      var n = quiz.qs.length, pct = Math.round(quiz.score / n * 100);
+      v.innerHTML = '<h2>Hasil latihan</h2><p class="lead">' + esc(scopeLabel(quiz.scope)) + '</p><div class="panel" style="margin-top:0"><div class="score">' + quiz.score + "/" + n + "</div>" +
+        '<div class="bar"><i style="width:' + pct + '%"></i></div><p class="muted" style="margin:6px 0 0">' +
+        (pct >= 80 ? "Bagus. Lanjutkan ke cakupan lain atau naikkan jumlah soal." : pct >= 50 ? "Lumayan. Ulangi soal yang salah sampai benar semua." : "Masih banyak yang perlu diulang. Buka klasifikasinya, baca tabelnya, lalu coba lagi.") + "</p>" +
+        '<div class="row" style="margin-top:12px">' + (quiz.wrong.length ? '<button class="btn primary" data-act="quiz-retry">Ulangi ' + quiz.wrong.length + " soal yang salah</button>" : "") +
+        '<button class="btn" data-act="quiz-again">Kuis baru, cakupan sama</button><button class="btn" data-act="quiz-setup">Ganti cakupan</button></div></div>' +
+        (quiz.wrong.length ? '<section class="panel"><h3>Yang salah</h3><ul class="wlist">' + quiz.wrong.map(function (q) {
+          return "<li>" + esc(q.meta) + "<br><b>" + esc(q.expl) + '</b> · <a href="#' + q.id + '">buka</a></li>'; }).join("") + "</ul></section>" : "");
+      return;
+    }
+    var opts = [["all", "Semua klasifikasi", DATA.length]];
+    CATS.forEach(function (c) { opts.push(["cat:" + c.id, "Kategori: " + c.name, scopePool("cat:" + c.id).length]); });
+    SEMS.forEach(function (s) { var k = scopePool("sem:" + s.id).length; if (k) opts.push(["sem:" + s.id, "Semester " + s.r + " (" + s.tahap + ")", k]); });
+    if (favs.length) opts.push(["fav", "★ Favorit", scopePool("fav").length]);
+    var wn = scopePool("wrong").length; if (wn) opts.push(["wrong", "Yang sering salah", wn]);
+    if (!opts.some(function (o) { return o[0] === state.qscope; })) state.qscope = "all";
+    var top = Object.keys(qs.wrong).filter(function (id) { return byId[id]; }).sort(function (a, b) { return qs.wrong[b] - qs.wrong[a]; }).slice(0, 6);
+    v.innerHTML = '<h2>Latihan</h2><p class="lead">Soal pilihan ganda dibuat otomatis dari isi klasifikasi: menebak tipe dari deskripsinya, arti suatu tipe, atau nama klasifikasinya.</p>' +
+      '<div class="panel" style="margin-top:0"><label class="field">Cakupan<select id="qscope">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === state.qscope ? " selected" : "") + ">" + esc(o[1]) + " · " + o[2] + "</option>"; }).join("") + "</select></label>" +
+      '<label class="field">Jumlah soal<select id="qn">' + [5, 10, 20, 30].map(function (k) { return "<option" + (k === state.qn ? " selected" : "") + ">" + k + "</option>"; }).join("") + "</select></label>" +
+      '<button class="btn primary" data-act="quiz-start">Mulai latihan</button></div>' +
+      '<section class="panel"><h3>Statistik</h3><div class="stats"><div class="stat"><b>' + qs.n + '</b><span>soal dijawab</span></div><div class="stat"><b>' + qs.ok + '</b><span>benar</span></div><div class="stat"><b>' + (qs.n ? Math.round(qs.ok / qs.n * 100) + "%" : "–") + "</b><span>akurasi</span></div></div>" +
+      (top.length ? '<p class="muted" style="margin:12px 0 4px">Paling sering salah:</p><div class="chips">' + top.map(function (id) { return '<a class="chip" href="#' + id + '">' + esc(byId[id].n) + "<i>" + qs.wrong[id] + "×</i></a>"; }).join("") + "</div>" : "") +
+      (qs.n ? '<p style="margin:12px 0 0"><button class="btn sm" data-act="quiz-reset">Hapus statistik</button></p>' : "") + "</section>";
+  }
+  function answer(k) {
+    var q = quiz.qs[quiz.i]; if (quiz.picked !== null || k >= q.opts.length) return;
+    quiz.picked = k;
+    var ok = q.opts[k] === q.ans;
+    qs.n++;
+    if (ok) { qs.ok++; quiz.score++; if (qs.wrong[q.id]) { qs.wrong[q.id]--; if (!qs.wrong[q.id]) delete qs.wrong[q.id]; } }
+    else { qs.wrong[q.id] = (qs.wrong[q.id] || 0) + 1; quiz.wrong.push(q); }
+    store.set("btkvklas.quiz", qs);
+    renderLatihan();
+  }
+  function nextQ() {
+    if (!quiz || quiz.picked === null) return;
+    quiz.i++; quiz.picked = null;
+    if (quiz.i >= quiz.qs.length) quiz.done = true;
+    renderLatihan(); window.scrollTo(0, 0);
+  }
+
+  /* ───────── Rute & render ───────── */
+  function fixPad() { document.documentElement.style.scrollPaddingTop = ($("hdr").offsetHeight + 8) + "px"; }
+  function render() {
+    $("count").textContent = DATA.length + " klasifikasi";
+    [].forEach.call(document.querySelectorAll("#tabs a"), function (a) { a.setAttribute("aria-current", a.getAttribute("data-tab") === state.view ? "page" : "false"); });
+    if (state.view === "cari") { if (!$("q")) renderCariShell(); updateCari(); }
+    else {
+      $("toolbar").innerHTML = "";
+      if (state.view === "belajar") renderBelajar();
+      else if (state.view === "latihan") renderLatihan();
+      else renderHome();
+    }
+    fixPad();
+  }
+  function route() {
+    var h = decodeURIComponent(location.hash.slice(1)), m;
+    if (byId[h]) {
+      state.view = "cari"; state.cat = "all"; state.q = ""; state.open = {}; state.open[h] = true;
+      if ($("q")) $("q").value = "";
+      render();
+      var el = document.getElementById(h); if (el) el.scrollIntoView({ block: "start" });
+      return;
+    }
+    if (h === "/cari") state.view = "cari";
+    else if ((m = h.match(/^\/belajar(?:\/(\d+))?$/))) {
+      state.view = "belajar"; state.semView = m[1] && semById[m[1]] ? m[1] : null;
+      if (state.semView) { state.sem = state.semView; store.set("btkvklas.sem", state.sem); }
+    }
+    else if (h === "/latihan") state.view = "latihan";
+    else state.view = "home";
+    render(); window.scrollTo(0, 0);
+  }
+
+  function toast(msg) {
+    var t = $("toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove("show"); }, 1600);
+  }
+  function copyText(text) {
+    var done = function () { toast("Disalin"); };
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, fallback); } else fallback();
+    function fallback() {
+      var ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); done(); } catch (e) { toast("Gagal menyalin"); }
+      document.body.removeChild(ta);
+    }
+  }
+  function rerenderKeepScroll() { var y = window.scrollY; render(); window.scrollTo(0, y); }
+
+  $("view").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-act]"); if (!btn) return;
+    var act = btn.getAttribute("data-act"), card = btn.closest(".card"), d = card ? byId[card.id] : null, seq, i;
+    if (act === "toggle") {
+      state.open[d.id] = !state.open[d.id];
+      if (state.view === "cari") { try { history.replaceState(null, "", state.open[d.id] ? "#" + d.id : "#/cari"); } catch (err) {} }
+      card.outerHTML = cardHTML(d);
+    } else if (act === "fav") {
+      i = favs.indexOf(d.id); if (i >= 0) favs.splice(i, 1); else favs.push(d.id);
+      store.set("btkvklas.favs", favs);
+      if (state.view === "cari") updateCari(); else card.outerHTML = cardHTML(d);
+    } else if (act === "copy") {
+      var r = d.r[+btn.getAttribute("data-i")]; copyText(d.n + " " + r[0] + ": " + r[1]);
+    } else if (act === "learn") {
+      i = learned.indexOf(d.id); if (i >= 0) learned.splice(i, 1); else { learned.push(d.id); toast("Ditandai sudah dipelajari"); }
+      store.set("btkvklas.learned", learned);
+      if (state.view === "belajar") rerenderKeepScroll(); else card.outerHTML = cardHTML(d);
+    } else if (act === "next") {
+      var nx = nextInSem(d.id); if (!nx) return;
+      state.open[d.id] = false; state.open[nx.id] = true; renderBelajar();
+      document.getElementById(nx.id).scrollIntoView({ block: "start" });
+    } else if (act === "first-unlearned") {
+      seq = semItems(state.semView);
+      var first = seq.filter(function (x) { return !isLearned(x.id); })[0] || seq[0];
+      state.open = {}; state.open[first.id] = true; renderBelajar();
+      document.getElementById(first.id).scrollIntoView({ block: "start" });
+    } else if (act === "semtab") {
+      state.semTab = btn.getAttribute("data-tab"); store.set("btkvklas.semtab", state.semTab); state.peek = null; renderBelajar();
+    } else if (act === "topic") {
+      var key = btn.getAttribute("data-key"); if (btn.checked) topics[key] = 1; else delete topics[key];
+      store.set("btkvklas.topics", topics); rerenderKeepScroll();
+    } else if (act === "peek") {
+      var pk = btn.getAttribute("data-key") + "|" + btn.getAttribute("data-id");
+      state.peek = state.peek === pk ? null : pk; if (state.peek) state.open[btn.getAttribute("data-id")] = true;
+      rerenderKeepScroll();
+    } else if (act === "quiz-one") { startQuiz("one:" + d.id, 3); }
+    else if (act === "quiz-sem") { startQuiz("sem:" + state.semView, 10); }
+    else if (act === "quiz-wrong") { startQuiz("wrong", 10); }
+    else if (act === "quiz-start") { state.qscope = $("qscope").value; state.qn = +$("qn").value; startQuiz(state.qscope, state.qn); }
+    else if (act === "quiz-ans") { answer(+btn.getAttribute("data-k")); }
+    else if (act === "quiz-next") { nextQ(); }
+    else if (act === "quiz-quit") { if (quiz.i === 0 && quiz.picked === null) quiz = null; else { quiz.qs = quiz.qs.slice(0, quiz.i + (quiz.picked !== null ? 1 : 0)); quiz.done = true; } renderLatihan(); }
+    else if (act === "quiz-retry") { var w = quiz.wrong; quiz = { scope: quiz.scope, qs: shuffle(w).map(function (q) { var c = Object.assign({}, q); c.opts = shuffle(q.opts); return c; }), i: 0, score: 0, picked: null, done: false, wrong: [] }; renderLatihan(); window.scrollTo(0, 0); }
+    else if (act === "quiz-again") { startQuiz(quiz.scope, Math.max(quiz.qs.length, 5)); window.scrollTo(0, 0); }
+    else if (act === "quiz-setup") { quiz = null; renderLatihan(); }
+    else if (act === "quiz-reset") { qs = { n: 0, ok: 0, wrong: {} }; store.set("btkvklas.quiz", qs); toast("Statistik dihapus"); renderLatihan(); }
+  });
+  $("view").addEventListener("input", vizUpdate);
+  $("view").addEventListener("change", vizUpdate);
+  $("toolbar").addEventListener("input", function (e) { if (e.target.id === "q") { state.q = e.target.value; updateCari(); } });
+  $("toolbar").addEventListener("click", function (e) {
+    if (e.target.closest("#clear")) { $("q").value = ""; state.q = ""; updateCari(); $("q").focus(); return; }
+    var b = e.target.closest(".chip"); if (!b) return;
+    state.cat = b.getAttribute("data-cat"); updateCari(); window.scrollTo(0, 0);
+  });
+  document.addEventListener("keydown", function (e) {
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (state.view === "latihan" && quiz && !quiz.done && tag !== "INPUT" && tag !== "SELECT") {
+      if (/^[1-9]$/.test(e.key)) { answer(+e.key - 1); return; }
+      if (e.key === "Enter" && quiz.picked !== null) { e.preventDefault(); nextQ(); return; }
+    }
+    if (e.key === "/" && tag !== "INPUT") { e.preventDefault(); if (state.view !== "cari") location.hash = "#/cari"; setTimeout(function () { $("q").focus(); $("q").select(); }, 0); }
+    else if (e.key === "Escape" && document.activeElement === $("q")) { $("q").value = ""; state.q = ""; updateCari(); $("q").blur(); }
+  });
+  window.addEventListener("hashchange", route);
+  window.addEventListener("resize", fixPad);
+
+  var deferred = null;
+  window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); deferred = e; $("install").hidden = false; });
+  $("install").onclick = function () { if (!deferred) return; deferred.prompt(); deferred = null; $("install").hidden = true; };
+  if ("serviceWorker" in navigator && location.protocol !== "file:") {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });
+  }
+
+  window.__btkv = { buildQuiz: buildQuiz, typesFor: typesFor };
+  route();
+})();
+</script>
+</body>
+</html>

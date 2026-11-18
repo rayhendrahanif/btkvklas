@@ -1,0 +1,16 @@
+{
+  "name": "BTKVKlas — Saku klasifikasi bedah toraks, kardiak & vaskular",
+  "short_name": "BTKVKlas",
+  "description": "Saku klasifikasi bedah toraks, kardiak, dan vaskular. Bisa dipakai offline.",
+  "lang": "id",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#121014",
+  "theme_color": "#121014",
+  "icons": [
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
